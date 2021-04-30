@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mrtc</title>
+  <style>
+    .label {
+      display: inline-block;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div><span class="label">userId：</span><input type="text" id="userId" placeholder="userId"></div>
+    <div><span class="label">userName：</span><input type="text" id="userName" placeholder="userName"></div>
+    <div><span class="label">roomId：</span><input type="text" id="roomId" placeholder="roomId"></div>
+    <button onclick="handleLogin()">加入会议</button>
+    <button onclick="handleLogout()">退出会议</button>
+    <button onclick="handleSubscribe()">订阅消息</button>
+    <button onclick="handleUnsubscribe()">退订消息</button>
+    <button onclick="handleSend()">发送消息</button>
+    <button onclick="log()">log</button>
+    <div>
+      <div style="display:flex;padding:10px;">
+        <span>发送：</span>
+        <textarea style="flex-grow:1;" id="sendInput"></textarea>
+      </div>
+      <div style="display:flex;padding:10px;">
+        <span>收到：</span>
+        <textarea style="flex-grow:1;" id="receiveInput"></textarea>
+      </div>
+    </div>
+  </div>
+  <div id="videoList">
+  </div>
+
+  <script src="./mrtc.js"></script>
+  <script src="./config.js"></script>
+  <script>
+    var app = new Mrtc(document.getElementById('videoList'), {
+      iceServer: null,
+      // 局域网ip
+      socketUrl: `wss://${host}:${port}`
+    })
+    // 登录
+    function handleLogin () {
+      app.login({
+        userId: document.getElementById('userId').value,
+        userName: document.getElementById('userName').value,
+        roomId: document.getElementById('roomId').value
+      })
+    }
+    // 退出
+    function handleLogout () {
+      app.logout()
+    }
+    // 订阅消息
+    function handleSubscribe () {
+      app.on('msg', handleReceive)
+    }
+    // 退订消息
+    function handleUnsubscribe () {
+      app.off('msg', handleReceive)
+    }
+    // 发送消息
+    function handleSend () {
+      const str = document.getElementById('sendInput').value
+      app.sendMsg(str)
+    }
+    function handleReceive (msg) {
+      var box = document.getElementById('receiveInput')
+      var str = box.value
+      str += `${str ? '\n' : ''}${msg.userName}(${new Date(msg.receiveTime).toLocaleString()})：${msg.msg}`
+      box.value = str
+    }
+    // 打印
+    function log () {
+      console.log('app', app)
+    }
+  </script>
+</body>
+</html>
